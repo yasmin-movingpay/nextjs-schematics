@@ -22,3 +22,7 @@ if (!directoryPath) {
 
 let componentName = path.basename(directoryPath)
 
+// Se a flag --view for passada, adicione "View" ao final do nome do componente
+if (args.view) {
+  componentName = `${componentName}View`;
+}
