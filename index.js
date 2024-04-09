@@ -59,6 +59,25 @@ export default function ${componentName}${propsCode} {
 }
 `;
 
+// Verifica se o diretório existe, se não, cria!
+if (directoryPath.endsWith('/') && !fs.existsSync(directoryPath)){
+  fs.mkdirSync(directoryPath, { recursive: true });
+} else {
+  directoryPath = path.dirname(directoryPath);
+}
+
+// Cria o arquivo do componente
+fs.writeFileSync(path.join(directoryPath, fileName), componentTemplate);
+
+// Verifica se o arquivo existe e exibe o status
+if (fs.existsSync(path.join(directoryPath, fileName))) {
+  const stats = fs.statSync(path.join(directoryPath, fileName));
+
+  console.log(`✅ [CREATE] ${directoryPath}/${fileName} (${stats.size} bytes)`);
+} else {
+  console.error(`❌ [ERROR] Failed to create ${directoryPath}/${fileName}`);
+}
+
 function camelToKebab(string) {
   let result = string.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
 
