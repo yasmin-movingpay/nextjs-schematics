@@ -27,6 +27,10 @@ if (args.view) {
   componentName = `${componentName}View`;
 }
 
+// O nome do arquivo deve ser em kebab-case
+const fileName = `${camelToKebab(componentName)}.tsx`;
+
+
 function camelToKebab(string) {
   let result = string.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
 
