@@ -5,52 +5,49 @@ const path = require('path');
 const minimist = require('minimist');
 const { camelToKebab, capitalizeFirstLetter } = require('./helpers/capitalizes');
 
-// Obtendo o nome do componente e o caminho do diretório
-const args = minimist(process.argv.slice(2), {
-  string: ['props'],
-  default: {
-    props: ''
+function parseArguments() {
+  const args = minimist(process.argv.slice(2), {
+    string: ['props'],
+    default: {
+      props: ''
+    }
+  });
+
+  if (!args._[0]) {
+    console.error('❌ algo de errado não está certo. você esqueceu de passar o nome do componente ou o caminho do diretório!');
+    process.exit(1);
   }
-})
 
-let directoryPath = args._[0]
-
-if (!directoryPath) {
-  console.error('❌ algo de errado não está certo. você esqueceu de passar o nome do componente ou o caminho do diretório!')
-  
-  process.exit(1)
+  return args;
 }
 
-let componentName = path.basename(directoryPath)
+function getComponentName(directoryPath, view) {
+  let componentName = path.basename(directoryPath);
 
-// Se a flag --view for passada, adicione "View" ao final do nome do componente
-if (args.view) {
-  componentName = `${componentName}View`;
+  if (view) {
+    componentName = `${componentName}View`;
+  }
+
+  return capitalizeFirstLetter(componentName);
 }
 
-// O nome do arquivo deve ser em kebab-case
-const fileName = `${camelToKebab(componentName)}.tsx`;
+function getPropsCode(props) {
+  let propsCode = '';
+  let propsType = '';
 
-// Analisando as propriedades
-let props = args.props.split(';').map(prop => prop.trim()).filter(Boolean);
+  if (props.length > 0) {
+    propsType = `type Props = {\n${props.join(';\n')}\n};\n`;
 
-let propsCode = '';
+    let propsNames = props.map(prop => prop.split(':')[0].trim());
 
-let propsType = '';
+    propsCode = `({ ${propsNames.join(', ')} }: Props)`;
+  }
 
-if (props.length > 0) {
-  propsType = `type Props = {\n${props.join(';\n')}\n};\n`;
-
-  let propsNames = props.map(prop => prop.split(':')[0].trim())
-  
-  propsCode = `({ ${propsNames.join(', ')} }: Props)`;
+  return { propsCode, propsType };
 }
 
-// Convertendo a primeira letra do nome do componente para maiúscula
-componentName = capitalizeFirstLetter(componentName);
-
-// Template padrao para o componente
-let componentTemplate = `'use client';
+function createComponentTemplate(componentName, propsCode, propsType) {
+  return `'use client';
 
 ${propsType}
 export default function ${componentName}${propsCode} {
@@ -59,22 +56,39 @@ export default function ${componentName}${propsCode} {
   );
 }
 `;
-
-// Verifica se o diretório existe, se não, cria!
-if (directoryPath.endsWith('/') && !fs.existsSync(directoryPath)){
-  fs.mkdirSync(directoryPath, { recursive: true });
-} else {
-  directoryPath = path.dirname(directoryPath);
 }
 
-// Cria o arquivo do componente
-fs.writeFileSync(path.join(directoryPath, fileName), componentTemplate);
+function createComponentFile(directoryPath, fileName, componentTemplate) {
+  if (directoryPath.endsWith('/') && !fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath, { recursive: true });
+  } else {
+    directoryPath = path.dirname(directoryPath);
+  }
 
-// Verifica se o arquivo existe e exibe o status
-if (fs.existsSync(path.join(directoryPath, fileName))) {
-  const stats = fs.statSync(path.join(directoryPath, fileName));
+  fs.writeFileSync(path.join(directoryPath, fileName), componentTemplate);
 
-  console.log(`✅ [CREATE] ${directoryPath}/${fileName} (${stats.size} bytes)`);
-} else {
-  console.error(`❌ [ERROR] Failed to create ${directoryPath}/${fileName}`);
+  if (fs.existsSync(path.join(directoryPath, fileName))) {
+    const stats = fs.statSync(path.join(directoryPath, fileName));
+
+    console.log(`✅ [CREATE] ${directoryPath}/${fileName} (${stats.size} bytes)`);
+  } else {
+    console.error(`❌ [ERROR] Failed to create ${directoryPath}/${fileName}`);
+  }
 }
+
+function main() {
+  const args = parseArguments();
+
+  let directoryPath = args._[0];
+  let componentName = getComponentName(directoryPath, args.view);
+  const fileName = `${camelToKebab(componentName)}.tsx`;
+
+  let props = args.props.split(';').map(prop => prop.trim()).filter(Boolean);
+  const { propsCode, propsType } = getPropsCode(props);
+
+  let componentTemplate = createComponentTemplate(componentName, propsCode, propsType);
+
+  createComponentFile(directoryPath, fileName, componentTemplate);
+}
+
+main();
