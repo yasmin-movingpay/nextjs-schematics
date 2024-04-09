@@ -32,3 +32,8 @@ function camelToKebab(string) {
 
   return result.charAt(0) === '-' ? result.slice(1) : result
 }
+
+// Função para converter a primeira letra para maiúscula
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
