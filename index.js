@@ -48,6 +48,16 @@ if (props.length > 0) {
 // Convertendo a primeira letra do nome do componente para maiúscula
 componentName = capitalizeFirstLetter(componentName);
 
+// Template padrao para o componente
+let componentTemplate = `'use client';
+
+${propsType}
+export default function ${componentName}${propsCode} {
+  return (
+      <p>${componentName} works!</p>
+  );
+}
+`;
 
 function camelToKebab(string) {
   let result = string.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
