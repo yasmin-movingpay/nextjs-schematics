@@ -30,6 +30,24 @@ if (args.view) {
 // O nome do arquivo deve ser em kebab-case
 const fileName = `${camelToKebab(componentName)}.tsx`;
 
+// Analisando as propriedades
+let props = args.props.split(';').map(prop => prop.trim()).filter(Boolean);
+
+let propsCode = '';
+
+let propsType = '';
+
+if (props.length > 0) {
+  propsType = `type Props = {\n${props.join(';\n')}\n};\n`;
+
+  let propsNames = props.map(prop => prop.split(':')[0].trim())
+  
+  propsCode = `({ ${propsNames.join(', ')} }: Props)`;
+}
+
+// Convertendo a primeira letra do nome do componente para maiúscula
+componentName = capitalizeFirstLetter(componentName);
+
 
 function camelToKebab(string) {
   let result = string.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
