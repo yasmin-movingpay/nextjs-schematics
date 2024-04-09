@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const minimist = require('minimist');
+const { camelToKebab, capitalizeFirstLetter } = require('./helpers/capitalizes');
 
 // Obtendo o nome do componente e o caminho do diretório
 const args = minimist(process.argv.slice(2), {
@@ -76,15 +77,4 @@ if (fs.existsSync(path.join(directoryPath, fileName))) {
   console.log(`✅ [CREATE] ${directoryPath}/${fileName} (${stats.size} bytes)`);
 } else {
   console.error(`❌ [ERROR] Failed to create ${directoryPath}/${fileName}`);
-}
-
-function camelToKebab(string) {
-  let result = string.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
-
-  return result.charAt(0) === '-' ? result.slice(1) : result
-}
-
-// Função para converter a primeira letra para maiúscula
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
 }
